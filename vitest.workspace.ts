@@ -4,4 +4,5 @@ export default [
   'packages/db',
   'packages/core',
   'apps/api',
+  'apps/web',
 ];

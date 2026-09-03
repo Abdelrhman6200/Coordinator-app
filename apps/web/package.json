@@ -1,0 +1,21 @@
+{
+  "name": "@coordinator/web",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node --experimental-strip-types src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@coordinator/core": "workspace:*",
+    "@coordinator/permissions": "workspace:*",
+    "@coordinator/rules": "workspace:*",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.10",
+    "@coordinator/db": "workspace:*"
+  }
+}
