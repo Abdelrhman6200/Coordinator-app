@@ -37,9 +37,14 @@ Start at [`docs/00-index.md`](docs/00-index.md). Build progress is tracked in
 pnpm install
 pnpm db:start          # or: docker compose up -d db
 pnpm db:migrate
-pnpm test              # 195 tests
+pnpm seed:demo         # a training cohort with synthetic people
+pnpm api               # :4000
+pnpm web               # :3000
+pnpm test              # 674 tests
 pnpm typecheck
 ```
+
+Operational procedures are in [`docs/17-admin-runbook.md`](docs/17-admin-runbook.md).
 
 `DATABASE_URL` defaults to `postgres://coordinator@127.0.0.1:5433/coordinator`.
 

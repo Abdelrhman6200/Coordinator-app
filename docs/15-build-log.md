@@ -6,38 +6,55 @@ this log records tests, not files written.
 
 ## Status
 
-| # | Increment | State | Evidence |
-|---|---|---|---|
-| 1 | Auth | **Not started** | — |
-| 2 | RBAC & record-level security | **Core complete; RLS pending** | 43 tests in `packages/permissions`, 8 in `packages/db` |
-| 3 | Core database & event backbone | **Schema complete; handlers pending** | 30 invariant tests in `packages/db` |
-| 4 | Organization & cohort configuration | **Schema complete** | config-version overlap tests |
-| 5 | Student master | **Schema complete** | identity/dedup tests |
-| 6 | Allocation | **Schema complete** | assignment exclusion tests |
-| 7 | Lifecycle state machine | **Schema complete; transition table pending** | stage-history exclusion tests |
-| 8 | Communications & follow-up/SLA | **Engine complete; module pending** | 46 tests (working calendar + SLA + attempts) |
-| 13 | Graduation | **Engine complete; module pending** | 18 tests |
-| 14 | Risk | **Engine complete; module pending** | 21 tests |
-| 16 | Quality | **Scoring & sampling complete; module pending** | 20 tests |
-| 9–12, 15, 17–24 | | **Not started** | — |
+| # | Increment | State |
+|---|---|---|
+| 1 | Auth | **Complete** — scrypt, sessions, lockout, step-up, impersonation |
+| 2 | RBAC & record-level security | **Complete** — matrix as data, scope predicates, generated tests |
+| 3 | Core database & event backbone | **Complete** — append-only, hash chain, outbox, idempotent handlers |
+| 4 | Organization & cohort configuration | **Schema complete**; cohort clone not built |
+| 5 | Student master | **Complete** |
+| 6 | Allocation | **Complete** — effective-dated, carries tasks and escalations |
+| 7 | Lifecycle state machine | **Schema complete**; transitions as data not built |
+| 8 | Communications & follow-up/SLA | **Complete** — atomic contact flow, per-channel attempts, sweeper |
+| 9 | Tasks | **Complete** — dedup, auto-cancel, reassignment |
+| 10 | Coaching | **Schema complete**; session service not built |
+| 11 | Freelancing | **Schema complete** |
+| 12 | Gigs | **Complete** via the evidence pipeline |
+| 13 | Graduation | **Complete** — the single calculation service |
+| 14 | Risk | **Complete** — DEPI triggers against group session position |
+| 15 | Escalations | **Schema complete**; service not built |
+| 16 | Quality | **Complete** — binary seven checks, R01–R12, immutable decisions |
+| 17 | Performance | **Schema complete**; scorecards not built |
+| 18 | Notifications | **Complete** — in-app, rate-limited, deduplicated |
+| 19 | Dashboards & read models | **Complete** for the seven screens built |
+| 20 | Reporting | **Complete** — daily, weekly, snapshots, reconciliation |
+| 21 | Audit & system logs | **Complete** — append-only, DLQ console functions |
+| 22 | Administration | **Partial** — config schema exists; Admin UI not built |
+| 23 | Import/export | **Import complete**; export not built |
+| 24 | End-to-end testing | **Substantial** — see below |
 
-### DEPI Round 5 alignment
+**674 tests passing** across six packages. `pnpm typecheck` clean.
 
-The confirmed requirements landed after increments 2–3 were built. See
-[`16-depi-r5-reconciliation.md`](16-depi-r5-reconciliation.md) for the delta.
+### What is NOT built
 
-| Area | State |
-|---|---|
-| Role model | **Replaced** with the 12 confirmed roles including Student and Coach Operations |
-| Separation of duties | **Rewritten** for the four-stage evidence pipeline, Quality independence, complaint routing and the Unresponsive history requirement |
-| Graduation ruleset | **Confirmed and locked by test** — Route A / Route B, with the $200 counterexample |
-| Quality review | **New binary seven-check module** with R01–R12 and R12 auto-escalation |
-| Schema | **Migration 0002** adds groups, sessions, attendance, services, the evidence pipeline, immutable Quality decisions, complaints, entrepreneurship, entitlement, decision log and report snapshots |
-| Rejection semantics | **Corrected** — a rejection no longer closes anything, in the engine and in the schema |
+Stated plainly so the gap is not mistaken for completeness:
 
-**296 tests passing** across `@coordinator/permissions`, `@coordinator/rules`
-and `@coordinator/db`.
-
+- **Screens**: Sessions, Freelancing, Services, Escalations, Risks, Team,
+  Performance, Reports and the full Admin panel have schema and (mostly)
+  services, but no UI. Seven screens are built: coordinator day, students,
+  student record, contact flow, Quality queue, Quality review, PM command
+  centre, control tower, student portal.
+- **Cohort configuration cloning** (the one-click reusability test, AC-24).
+- **Lifecycle transitions as configuration data** — the state machine is
+  specified in docs/05 but enforced ad hoc in services.
+- **Export** (Excel/CSV/PDF with watermarking).
+- **Escalation routing engine** — the matrix is configuration in `depi-r5.ts`
+  but no service consumes it yet.
+- **Load testing** at the stated scale (2,948 students, 5M events).
+- **RLS policies** — scope is enforced by query predicate in the service layer;
+  the database backstop is specified but not yet applied.
+- **UAT** — scripts are written in docs/11; none have been executed by real
+  staff.
 ## What exists
 
 ```

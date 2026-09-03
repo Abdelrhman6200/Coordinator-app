@@ -19,6 +19,8 @@ Read in this order. Later documents assume the vocabulary of earlier ones.
 | 13 | [Build Order](13-build-order.md) | Phase D |
 | 14 | [Consistency Gate](14-consistency-gate.md) | Traceability proof |
 | 15 | [Build Log](15-build-log.md) | Phase D progress and decisions taken during the build |
+| 16 | [DEPI R5 Reconciliation](16-depi-r5-reconciliation.md) | Delta against the confirmed requirements |
+| 17 | [Admin Runbook](17-admin-runbook.md) | Operational procedures |
 
 ## Conventions used throughout
 

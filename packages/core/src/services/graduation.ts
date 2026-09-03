@@ -250,13 +250,32 @@ export async function graduationSummary(
   db: pg.Pool | pg.PoolClient,
   cohortId: string,
 ): Promise<GraduationSummary> {
+  // Counted from STUDENT, not from graduation_progress.
+  //
+  // A student who has never submitted anything has no graduation record, and
+  // counting records would silently drop them from the denominator -- inflating
+  // the rate by omitting exactly the students who are furthest from graduating.
+  // The denominator is every student in the cohort, less those the cohort's
+  // configured policy excludes.
   const { rows } = await db.query(
     `SELECT
-       count(*) FILTER (WHERE gp.in_denominator)::int                                AS denominator,
-       count(*) FILTER (WHERE gp.in_denominator AND gp.status = 'graduated')::int    AS graduated,
-       count(*) FILTER (WHERE NOT gp.in_denominator)::int                            AS excluded
-     FROM graduation_progress gp
-     WHERE gp.cohort_id = $1`,
+       count(*) FILTER (WHERE NOT excluded)::int AS denominator,
+       count(*) FILTER (WHERE NOT excluded AND coalesce(gp.status,'') = 'graduated')::int
+         AS graduated,
+       count(*) FILTER (WHERE excluded)::int AS excluded
+     FROM (
+       SELECT s.id,
+              -- Withdrawal is the only thing that can remove a student, and only
+              -- when the cohort's policy says so. An unresponsive student stays
+              -- in (§15).
+              CASE
+                WHEN c.denominator_policy = 'include_all' THEN false
+                ELSE EXISTS (SELECT 1 FROM withdrawal w WHERE w.student_id = s.id)
+              END AS excluded
+       FROM student s JOIN cohort c ON c.id = s.cohort_id
+       WHERE s.cohort_id = $1
+     ) t
+     LEFT JOIN graduation_progress gp ON gp.student_id = t.id`,
     [cohortId],
   );
   const denominator: number = rows[0]?.denominator ?? 0;

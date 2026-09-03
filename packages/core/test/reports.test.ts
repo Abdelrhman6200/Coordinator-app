@@ -168,6 +168,64 @@ describe('report snapshots are immutable (§59)', () => {
   });
 });
 
+describe('the denominator counts students, not graduation records', () => {
+  it('includes a student who has never submitted anything', async () => {
+    // The failure this guards against inflates the rate by dropping exactly the
+    // students furthest from graduating.
+    const { rows } = await pool.query(
+      `INSERT INTO student (cohort_id, identity_key, full_name, phone_e164, current_stage)
+       VALUES ($1,$2,'Never Submitted','+201000009999','coaching') RETURNING id`,
+      [w.cohortId, randomUUID()],
+    );
+    const { graduationSummary } = await import('../src/services/graduation.ts');
+    const summary = await graduationSummary(pool, w.cohortId);
+
+    const { rows: total } = await pool.query(
+      `SELECT count(*)::int AS n FROM student WHERE cohort_id = $1`,
+      [w.cohortId],
+    );
+    expect(summary.denominator).toBe(total[0].n);
+    expect(summary.denominator).toBeGreaterThan(1);
+
+    await pool.query(`DELETE FROM student WHERE id = $1`, [rows[0].id]);
+  });
+
+  it('keeps a withdrawn student in under the include_all default (register item 26)', async () => {
+    const { rows } = await pool.query(
+      `INSERT INTO student (cohort_id, identity_key, full_name, phone_e164, current_stage)
+       VALUES ($1,$2,'Withdrawn One','+201000009998','coaching') RETURNING id`,
+      [w.cohortId, randomUUID()],
+    );
+    const { rows: staff } = await pool.query(`SELECT id FROM app_user LIMIT 1`);
+    await pool.query(
+      `INSERT INTO withdrawal (student_id, withdrawn_on, reason, ministry_reference,
+                               previous_status, recorded_by)
+       VALUES ($1, CURRENT_DATE, 'left', 'MIN-DEMO-1', 'coaching', $2)`,
+      [rows[0].id, staff[0].id],
+    );
+    const { graduationSummary } = await import('../src/services/graduation.ts');
+    const summary = await graduationSummary(pool, w.cohortId);
+    expect(summary.withdrawnExcluded).toBe(0);
+
+    // Flip the cohort policy and the same student leaves the denominator --
+    // the choice is configuration, and it is visible in the number.
+    await pool.query(
+      `UPDATE cohort SET denominator_policy = 'exclude_withdrawn' WHERE id = $1`,
+      [w.cohortId],
+    );
+    const after = await graduationSummary(pool, w.cohortId);
+    expect(after.withdrawnExcluded).toBe(1);
+    expect(after.denominator).toBe(summary.denominator - 1);
+
+    await pool.query(
+      `UPDATE cohort SET denominator_policy = 'include_all' WHERE id = $1`,
+      [w.cohortId],
+    );
+    await pool.query(`DELETE FROM withdrawal WHERE student_id = $1`, [rows[0].id]);
+    await pool.query(`DELETE FROM student WHERE id = $1`, [rows[0].id]);
+  });
+});
+
 describe('reconciliation: every number traces to the event log (§69)', () => {
   it('matches the read model against a recomputation from raw events', async () => {
     const result = await reconcileGraduation(pool, w.cohortId);

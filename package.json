@@ -16,11 +16,14 @@
     "db:start": "bash scripts/pg-local.sh start",
     "db:stop": "bash scripts/pg-local.sh stop",
     "api": "node --experimental-strip-types apps/api/src/server.ts",
-    "web": "node --experimental-strip-types apps/web/src/server.ts"
+    "web": "node --experimental-strip-types apps/web/src/server.ts",
+    "seed:demo": "node --experimental-strip-types scripts/seed-demo.ts"
   },
   "devDependencies": {
     "typescript": "^5.7.2",
     "vitest": "^2.1.8",
-    "@types/node": "^22.10.2"
+    "@types/node": "^22.10.2",
+    "pg": "^8.13.1",
+    "@types/pg": "^8.11.10"
   }
 }
