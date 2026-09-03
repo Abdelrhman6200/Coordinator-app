@@ -26,8 +26,17 @@ export const RISK_REASONS = [
 ] as const;
 export type RiskReason = (typeof RISK_REASONS)[number];
 
-/** The typed fact object every rule is evaluated against. */
+/**
+ * The fact object every rule is evaluated against.
+ *
+ * The named fields are the signals every cohort has. The index signature is
+ * deliberate: a cohort may introduce its own signal (DEPI Round 5 adds
+ * attendance shortfall and group-relative progress) by supplying the fact and a
+ * rule that reads it, with no change to this engine. A rule naming a fact that
+ * is absent simply does not fire.
+ */
 export interface RiskFacts {
+  readonly [fact: string]: number | boolean | null | undefined;
   readonly workingDaysSinceContact: number | null;
   readonly failedContactAttempts: number;
   readonly missedCoachingSessions: number;
@@ -42,7 +51,8 @@ export type Comparator = 'gte' | 'gt' | 'eq' | 'is_true';
 
 export interface RiskRule {
   readonly key: string;
-  readonly fact: keyof RiskFacts;
+  /** Name of the fact this rule reads. Unknown facts never fire. */
+  readonly fact: string;
   readonly comparator: Comparator;
   readonly threshold: number;
   readonly resultingLevel: Exclude<RiskLevel, 'green'>;
@@ -98,6 +108,7 @@ export function evaluateRisk(facts: RiskFacts, ruleset: RiskRuleset): RiskEvalua
   for (const rule of ruleset.rules) {
     if (!rule.enabled) continue;
     const value = facts[rule.fact];
+    if (value === undefined) continue; // an unsupplied fact is not a firing rule
     if (!compare(value, rule.comparator, rule.threshold)) continue;
     fired.push({
       ruleKey: rule.key,

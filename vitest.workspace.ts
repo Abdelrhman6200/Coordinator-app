@@ -1,1 +1,6 @@
-export default ['packages/permissions', 'packages/rules', 'packages/db'];
+export default [
+  'packages/permissions',
+  'packages/rules',
+  'packages/db',
+  'packages/core',
+];

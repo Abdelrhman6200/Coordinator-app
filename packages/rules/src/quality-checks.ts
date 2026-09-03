@@ -45,7 +45,7 @@ export type QualityOutcome = 'accepted' | 'rejected' | 'escalated';
 export interface QualityReviewInput {
   readonly checks: Readonly<Record<QualityCheck, boolean>>;
   readonly rejectionCodes: readonly RejectionCode[];
-  readonly reviewerComments?: string;
+  readonly reviewerComments?: string | undefined;
   /** Prior rejections of this submission. A second rejection escalates (§36). */
   readonly priorRejectionCount: number;
   /** The student has formally disputed the decision. */
