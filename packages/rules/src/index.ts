@@ -5,3 +5,5 @@ export * from './attempts.ts';
 export * from './risk.ts';
 export * from './graduation.ts';
 export * from './qa-scoring.ts';
+export * from './quality-checks.ts';
+export * from './depi-r5.ts';

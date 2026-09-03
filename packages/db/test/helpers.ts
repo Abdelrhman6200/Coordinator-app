@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import pg from 'pg';
 
 export const URL =
@@ -38,9 +39,13 @@ export interface Fixture {
 
 let counter = 0;
 
-/** A minimal, isolated fixture. Each call uses fresh codes so tests do not collide. */
+/**
+ * A minimal, isolated fixture. Codes carry a random component as well as a
+ * counter: vitest runs test files in separate processes, so a per-module counter
+ * and a millisecond timestamp are not enough to avoid a collision between them.
+ */
 export async function seed(c: pg.Client): Promise<Fixture> {
-  const n = `${Date.now()}_${counter++}`;
+  const n = `${Date.now()}_${counter++}_${randomUUID().slice(0, 8)}`;
   const program = await c.query(
     `INSERT INTO program (code, name) VALUES ($1, 'Test') RETURNING id`,
     [`prog_${n}`],

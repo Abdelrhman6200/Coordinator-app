@@ -10,6 +10,32 @@ engineering team does.
 action and the most visibility. Where a choice affects the headline KPI, the
 default surfaces the choice rather than hiding it.
 
+> **Updated against the confirmed DEPI Round 5 requirements.** Items 1, 3, 4,
+> 7–12 are now **CLOSED** with confirmed values; see
+> [`16-depi-r5-reconciliation.md`](16-depi-r5-reconciliation.md) for the full
+> delta. Items 23–32 are new, taken from §76 and §77 of the requirements.
+
+
+## Closed by the confirmed DEPI Round 5 requirements
+
+| # | Item | Confirmed value | Source |
+|---|---|---|---|
+| 1 | Graduation criteria | Route A: 3 gigs, each ≥ $5, total ≥ $15. Route B: 1 gig ≥ $300. No other route | §27 |
+| 3 | Contact cadence | At least once every 7 days | §14 |
+| 4 | Unresponsive threshold | 5 attempts across different channels over two weeks | §15 |
+| 7 | QA sampling | 100% freelancing evidence · 15% entrepreneurship audit · 20 double-reviewed weekly, ≥90% agreement | §38 |
+| 8 | QA scoring | **Seven binary checks, all must pass.** Not a weighted score | §33 |
+| 9 | Escalation SLAs | Complaint 48h · operational blocker 24h · coach absence 24h · systemic immediate | §46 |
+| 10 | Evidence standard | Platform: order page + earnings proof + delivered work + profile link. Direct: (contract \| transfer proof \| agreement conversation) + delivered work. Counts only if delivered AND paid AND evidenced AND Quality-accepted | §30 |
+| 11 | Currency | Amount shown in evidence counts; platform fees not deducted | §28 |
+| 12 | Coaching capacity & frequency | 1 session/group/week · 8 regular, 5 Industry · 3 hours · 43 primary coaches + standby | §16 |
+
+Partially closed: **item 2 (denominator)** — an unresponsive student **remains in
+the denominator**; whether an approved Ministry withdrawal leaves it is still
+open and is carried below as item 26.
+
+## Still open
+
 | # | Item | Why it matters | Options | Default implemented | Owner | Status | Date needed |
 |---|---|---|---|---|---|---|---|
 | 1 | **Exact graduation criteria** — gig count, per-gig value floor, revenue threshold, evidence standard, route logic | Defines the primary KPI. Every graduation number in the system is meaningless until this is set | Single route on gig count · dual route (count OR count+revenue) · count + revenue + evidence grade | Two-route skeleton with thresholds **unset**; engine reports `Not Eligible` and states "graduation criteria not yet configured" rather than guessing | Programme owner | **Open** | Before first student reaches `Gig Progress` |
@@ -41,6 +67,27 @@ These emerged from specification work and need the same treatment.
 | 20 | Caseload difficulty index definition | Performance scores are unfair without it, and arbitrary with a bad one | Track + intake risk + starting stage, equal weights; un-normalised score always shown alongside | PM + Operations |
 | 21 | Notification rate limits and digest defaults | Determines whether staff trust notifications or ignore them | Max 1 per `(user, trigger, student)` per hour; daily digest for non-urgent | Operations |
 | 22 | Forecast observation window and feasibility factor | Changes the forecast materially | 30-day rolling window; feasibility factor **0** for stages that cannot complete in the remaining time (conservative) | PM |
+
+## Working rule
+
+An item on this register is never resolved by an engineering assumption. If a
+decision is needed to unblock work, the default is implemented, badged, and the
+item is escalated with a date needed — it is not quietly closed.
+
+## New items from the confirmed requirements (§76, §77)
+
+| # | Item | Why it matters | Default implemented | Owner | Status | Date needed |
+|---|---|---|---|---|---|---|
+| 23 | **Round 5 master cohort workbook** — roster, group codes, track, provider, schedule, start/end dates, slot, current status, reliable unique student ID | **The only hard blocker.** Named as such in §77. No production import is possible without it | Import pipeline built and tested against synthetic data; production import blocked | Project Manager | **Open — blocking** | Before any production import |
+| 24 | Ministry report format, frequency, recipient | Determines a contractual deliverable | Configurable report definition, unset | Project Manager | **Open** | Before first Ministry submission |
+| 25 | Ministry withdrawal request/decision mechanism | Determines how a withdrawal reaches the system | Status, date, reason and Ministry reference recorded; mechanism configurable | Project Operations | **Open** | Before the first withdrawal |
+| 26 | Whether approved withdrawals leave the denominator | **Moves the headline graduation rate** | `include_all` — conservative, cannot flatter the rate; policy stamped on every graduation record | Project Manager | **Open** | Before the first PM review |
+| 27 | Previous-round gig/graduation/QA data | Forecast baselines and QA calibration history | Forecast runs on this cohort's own observed rates | Operations Systems | **Open** | Before the first forecast is relied on |
+| 28 | Day-zero graduation census | Some students may already meet the rule; without the census, pre-existing graduates are miscounted as cohort outcomes | Import workflow built; census must be run through the normal evidence process before launch | Project Operations | **Open** | Before launch |
+| 29 | 1:1 follow-up content standard | Determines required fields at the point of contact | Fields configurable, not immutable — source marks PROPOSED | Project Operations | **Open** | Before coordinator go-live |
+| 30 | 75% (6/8) attendance operating standard | Drives At Risk and Critical thresholds | Configurable; attendance is **not** a graduation criterion | Project Operations | **Open** | Before risk rules go live |
+| 31 | Systems/access: master file, Drive, forms, channels, LMS/CRM, automations, platform verification access | Determines which integrations are possible | Integration service behind an interface; **manual operation always available** | Operations Systems | **Open** | Before integration work |
+| 32 | Entitlement/deduction contractual grounding | Payroll exposure | Accrual **tracked, never auto-applied**, pending HR/legal sign-off | Project Manager + HR/Legal | **Open** | Before any deduction |
 
 ## Working rule
 

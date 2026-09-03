@@ -1,287 +1,378 @@
 /**
- * The seed role set, transcribed from docs/02-permission-matrix.md.
+ * The confirmed DEPI Round 5 role set (requirements §3, §5).
  *
- * This table is the single source of truth: it seeds `role_permission` in the
- * database AND generates the exhaustive role x endpoint test (docs/11 §4), so
- * documentation and behaviour cannot drift.
+ * This table is the single source of truth: it seeds `role_permission` AND
+ * generates the exhaustive role x endpoint test, so documentation and behaviour
+ * cannot drift.
  *
- * Roles here are *seed data*, not code. An operator may add, edit or remove
- * roles at runtime through Admin; nothing in the system branches on these keys.
+ * Roles are seed DATA. Nothing in the codebase branches on a role key -- an
+ * operator may add, rename or remove roles through Administration for a future
+ * round without a code change.
  */
 import type { Module, Permission, RoleDefinition, Scope, Verb } from './model.ts';
 
-/** Terse builder: p('students', 'view create edit', 'cohort') */
 function p(module: Module, verbs: string, scope: Scope): Permission[] {
   return verbs.split(/\s+/).map((v) => ({ module, verb: v as Verb, scope }));
 }
 
-export const SYSTEM_ADMIN: RoleDefinition = {
-  key: 'system_admin',
-  name: 'System Admin',
-  permissions: [
-    ...p('dashboard', 'view', 'all'),
-    ...p('my_work', 'view edit', 'own'),
-    ...p('students', 'view create edit delete assign reassign export', 'all'),
-    ...p('communications', 'view create edit', 'all'),
-    ...p('coaching', 'view create edit assign', 'all'),
-    ...p('freelancing', 'view create edit', 'all'),
-    ...p('gigs', 'view create edit approve reject override_lock', 'all'),
-    ...p('graduation', 'view create approve reject override_lock', 'all'),
-    ...p('risks', 'view create edit', 'all'),
-    ...p('escalations', 'view create edit approve', 'all'),
-    ...p('quality', 'view create edit audit configure', 'all'),
-    ...p('tasks', 'view create edit assign', 'all'),
-    ...p('teams', 'view create edit assign reassign', 'all'),
-    ...p('reports', 'view export configure', 'all'),
-    ...p('notifications', 'view edit configure', 'all'),
-    ...p('audit_logs', 'view_logs export', 'all'),
-    ...p('admin', 'view configure impersonate', 'all'),
-  ],
-};
-
+/**
+ * Project Manager -- full management visibility and high-level approval.
+ * Deliberately NOT an administrator: §5 requires administrative technical
+ * access to remain separate from business authority, so the PM cannot
+ * `configure` or `impersonate`.
+ */
 export const PROJECT_MANAGER: RoleDefinition = {
   key: 'project_manager',
   name: 'Project Manager',
   permissions: [
-    ...p('dashboard', 'view', 'all'),
-    ...p('my_work', 'view', 'own'),
-    ...p('students', 'view export', 'cohort'),
-    ...p('communications', 'view', 'cohort'),
-    ...p('coaching', 'view', 'cohort'),
-    ...p('freelancing', 'view', 'cohort'),
-    ...p('gigs', 'view', 'cohort'),
-    ...p('graduation', 'view approve reject', 'cohort'),
-    ...p('risks', 'view', 'cohort'),
-    ...p('escalations', 'view approve', 'cohort'),
-    ...p('quality', 'view', 'cohort'),
-    ...p('tasks', 'view', 'cohort'),
-    ...p('teams', 'view', 'cohort'),
-    ...p('reports', 'view export', 'cohort'),
-    ...p('notifications', 'view edit', 'own'),
-    ...p('audit_logs', 'view_logs', 'cohort'),
-    ...p('admin', 'view', 'cohort'),
-  ],
-};
-
-export const OPS_ASSOCIATE: RoleDefinition = {
-  key: 'ops_associate',
-  name: 'Project Operations Associate',
-  permissions: [
-    ...p('dashboard', 'view', 'cohort'),
+    ...p('home', 'view', 'all'),
     ...p('my_work', 'view edit', 'own'),
-    ...p('students', 'view create edit assign reassign export', 'cohort'),
-    ...p('communications', 'view create', 'cohort'),
-    ...p('coaching', 'view edit', 'cohort'),
-    ...p('freelancing', 'view create edit', 'cohort'),
-    ...p('gigs', 'view create edit approve reject', 'cohort'),
-    ...p('graduation', 'view create', 'cohort'),
+    ...p('students', 'view export', 'cohort'),
+    ...p('groups', 'view export', 'cohort'),
+    ...p('communications', 'view', 'cohort'),
+    ...p('sessions', 'view', 'cohort'),
+    ...p('freelancing', 'view', 'cohort'),
+    ...p('services', 'view', 'cohort'),
+    ...p('evidence', 'view', 'cohort'),
+    ...p('quality', 'view', 'cohort'),
+    ...p('graduation', 'view export', 'cohort'),
     ...p('risks', 'view create edit', 'cohort'),
     ...p('escalations', 'view create edit approve', 'cohort'),
-    ...p('quality', 'view', 'cohort'),
-    ...p('tasks', 'view create assign', 'cohort'),
-    ...p('teams', 'view assign reassign', 'cohort'),
+    ...p('team', 'view', 'cohort'),
+    ...p('performance', 'view create approve', 'cohort'),
     ...p('reports', 'view export', 'cohort'),
     ...p('notifications', 'view edit', 'own'),
-    ...p('audit_logs', 'view_logs', 'cohort'),
-    ...p('admin', 'view', 'cohort'),
+    ...p('audit', 'view_logs export', 'cohort'),
   ],
 };
 
-export const TEAM_LEADER: RoleDefinition = {
-  key: 'team_leader',
-  name: 'Team Leader',
+/** Project Operations -- cross-operations authority, including pathway designation. */
+export const PROJECT_OPERATIONS: RoleDefinition = {
+  key: 'project_operations',
+  name: 'Project Operations',
   permissions: [
-    ...p('dashboard', 'view', 'team'),
+    ...p('home', 'view', 'cohort'),
+    ...p('my_work', 'view edit', 'own'),
+    ...p('students', 'view create edit assign reassign export', 'cohort'),
+    ...p('groups', 'view create edit assign reassign approve export', 'cohort'),
+    ...p('communications', 'view create', 'cohort'),
+    ...p('sessions', 'view edit', 'cohort'),
+    ...p('freelancing', 'view create edit', 'cohort'),
+    ...p('services', 'view create edit assign', 'cohort'),
+    ...p('evidence', 'view', 'cohort'),
+    ...p('quality', 'view', 'cohort'),
+    ...p('graduation', 'view export', 'cohort'),
+    ...p('risks', 'view create edit', 'cohort'),
+    ...p('escalations', 'view create edit approve', 'cohort'),
+    ...p('team', 'view assign reassign', 'cohort'),
+    ...p('performance', 'view', 'cohort'),
+    ...p('reports', 'view export', 'cohort'),
+    ...p('notifications', 'view edit', 'own'),
+    ...p('audit', 'view_logs', 'cohort'),
+    ...p('administration', 'view', 'cohort'),
+  ],
+};
+
+/** Team Supervisor -- all coordinators and students in their team subtree. */
+export const TEAM_SUPERVISOR: RoleDefinition = {
+  key: 'team_supervisor',
+  name: 'Team Supervisor',
+  permissions: [
+    ...p('home', 'view', 'team'),
     ...p('my_work', 'view edit', 'team'),
-    ...p('students', 'view edit assign reassign', 'team'),
+    ...p('students', 'view edit reassign', 'team'),
+    ...p('groups', 'view edit reassign', 'team'),
     ...p('communications', 'view create edit', 'team'),
-    ...p('coaching', 'view', 'team'),
+    ...p('sessions', 'view', 'team'),
     ...p('freelancing', 'view edit', 'team'),
-    ...p('gigs', 'view create edit', 'team'),
-    ...p('graduation', 'view create', 'team'),
+    ...p('services', 'view', 'team'),
+    ...p('evidence', 'view', 'team'),
+    ...p('quality', 'view', 'team'),
+    ...p('graduation', 'view', 'team'),
     ...p('risks', 'view create edit', 'team'),
     ...p('escalations', 'view create edit approve', 'team'),
-    ...p('quality', 'view', 'team'),
-    ...p('tasks', 'view create assign', 'team'),
-    ...p('teams', 'view assign', 'team'),
+    ...p('team', 'view assign', 'team'),
+    ...p('performance', 'view create', 'team'),
     ...p('reports', 'view export', 'team'),
     ...p('notifications', 'view edit', 'own'),
-    ...p('audit_logs', 'view_logs', 'team'),
+    ...p('audit', 'view_logs', 'team'),
   ],
 };
 
-export const COORDINATOR: RoleDefinition = {
-  key: 'coordinator',
+/**
+ * Operations Coordinator -- frontline student ownership plus L1 evidence
+ * screening. Explicitly cannot Quality-approve, edit a Quality decision, or
+ * graduate a student.
+ */
+export const OPERATIONS_COORDINATOR: RoleDefinition = {
+  key: 'operations_coordinator',
   name: 'Operations Coordinator',
   permissions: [
-    ...p('dashboard', 'view', 'own'),
+    ...p('home', 'view', 'own'),
     ...p('my_work', 'view edit', 'own'),
     ...p('students', 'view edit', 'own'),
+    ...p('groups', 'view', 'own'),
     ...p('communications', 'view create edit', 'own'),
-    ...p('coaching', 'view', 'own'),
+    ...p('sessions', 'view', 'own'),
     ...p('freelancing', 'view create edit', 'own'),
-    ...p('gigs', 'view create edit', 'own'),
-    ...p('graduation', 'view create', 'own'),
+    ...p('services', 'view', 'own'),
+    // L1 screening: may review and return, never accept on Quality's behalf.
+    ...p('evidence', 'view create edit reject', 'own'),
+    ...p('quality', 'view', 'own'),
+    ...p('graduation', 'view', 'own'),
     ...p('risks', 'view create edit', 'own'),
     ...p('escalations', 'view create', 'own'),
-    ...p('quality', 'view', 'own'),
-    ...p('tasks', 'view create edit', 'own'),
-    ...p('teams', 'view', 'own'),
+    ...p('team', 'view', 'own'),
+    ...p('performance', 'view', 'own'),
     ...p('reports', 'view', 'own'),
     ...p('notifications', 'view edit', 'own'),
   ],
 };
 
-function coachingManager(type: 't1' | 't2'): RoleDefinition {
-  return {
-    key: `coaching_manager_${type}`,
-    name: `Coaching Manager Type ${type === 't1' ? 1 : 2}`,
-    permissions: [
-      ...p('dashboard', 'view', 'coaching_team'),
-      ...p('my_work', 'view edit', 'coaching_team'),
-      ...p('students', 'view', 'coaching_team'),
-      ...p('communications', 'view', 'coaching_team'),
-      ...p('coaching', 'view create edit assign', 'coaching_team'),
-      ...p('freelancing', 'view', 'coaching_team'),
-      ...p('gigs', 'view', 'coaching_team'),
-      ...p('graduation', 'view', 'coaching_team'),
-      ...p('risks', 'view create', 'coaching_team'),
-      ...p('escalations', 'view create edit approve', 'coaching_team'),
-      ...p('quality', 'view', 'coaching_team'),
-      ...p('tasks', 'view create assign', 'coaching_team'),
-      ...p('teams', 'view assign', 'coaching_team'),
-      ...p('reports', 'view export', 'coaching_team'),
-      ...p('notifications', 'view edit', 'own'),
-      ...p('audit_logs', 'view_logs', 'coaching_team'),
-    ],
-  };
-}
+/** Coach Operations -- coach capacity, standby pool, session coverage. */
+export const COACH_OPERATIONS: RoleDefinition = {
+  key: 'coach_operations',
+  name: 'Coach Operations',
+  permissions: [
+    ...p('home', 'view', 'coaching_team'),
+    ...p('my_work', 'view edit', 'own'),
+    ...p('students', 'view', 'coaching_team'),
+    ...p('groups', 'view', 'coaching_team'),
+    ...p('communications', 'view', 'coaching_team'),
+    ...p('sessions', 'view create edit assign reassign', 'coaching_team'),
+    ...p('freelancing', 'view', 'coaching_team'),
+    ...p('services', 'view', 'coaching_team'),
+    ...p('evidence', 'view', 'coaching_team'),
+    ...p('quality', 'view', 'coaching_team'),
+    ...p('graduation', 'view', 'coaching_team'),
+    ...p('risks', 'view create', 'coaching_team'),
+    ...p('escalations', 'view create edit approve', 'coaching_team'),
+    ...p('team', 'view assign reassign', 'coaching_team'),
+    ...p('performance', 'view create', 'coaching_team'),
+    ...p('reports', 'view export', 'coaching_team'),
+    ...p('notifications', 'view edit', 'own'),
+    ...p('audit', 'view_logs', 'coaching_team'),
+  ],
+};
 
-function coach(type: 't1' | 't2'): RoleDefinition {
+/**
+ * Coaches. Both types deliver sessions and review evidence within 24h; the
+ * Support Coach additionally owns the internal-service pipeline through to
+ * acceptance, which is the only difference in the grant set.
+ */
+function coachRole(
+  key: 'outcome_coach' | 'support_coach',
+  name: string,
+  extra: Permission[],
+): RoleDefinition {
   return {
-    key: `coach_${type}`,
-    name: `Coach Type ${type === 't1' ? 1 : 2}`,
+    key,
+    name,
     permissions: [
-      ...p('dashboard', 'view', 'own'),
+      ...p('home', 'view', 'own'),
       ...p('my_work', 'view edit', 'own'),
-      // Coaching projection of the student record; enforced by the projection,
-      // not by hiding fields in the UI. See docs/02 §3.2.
       ...p('students', 'view', 'own'),
+      ...p('groups', 'view', 'own'),
       ...p('communications', 'view', 'own'),
-      ...p('coaching', 'view create edit', 'own'),
-      ...p('freelancing', 'view create', 'own'),
-      ...p('gigs', 'view', 'own'),
+      ...p('sessions', 'view create edit', 'own'),
+      ...p('freelancing', 'view create edit', 'own'),
+      // Coach review stage: approve onward to L1, or return. Never the Quality
+      // decision itself.
+      ...p('evidence', 'view edit reject', 'own'),
+      ...p('quality', 'view', 'own'),
       ...p('graduation', 'view', 'own'),
       ...p('risks', 'view create', 'own'),
       ...p('escalations', 'view create', 'own'),
-      ...p('quality', 'view', 'own'),
-      ...p('tasks', 'view create edit', 'own'),
-      ...p('teams', 'view', 'own'),
+      ...p('team', 'view', 'own'),
+      ...p('performance', 'view', 'own'),
       ...p('reports', 'view', 'own'),
       ...p('notifications', 'view edit', 'own'),
+      ...extra,
     ],
   };
 }
 
+export const OUTCOME_COACH = coachRole('outcome_coach', 'Outcome Coach', [
+  ...p('services', 'view', 'own'),
+]);
+
+export const SUPPORT_COACH = coachRole('support_coach', 'Support Coach', [
+  ...p('services', 'view create edit assign', 'own'),
+]);
+
+/**
+ * Quality Member -- the L2 queue. Broad read for auditability; write confined to
+ * Quality objects. Explicitly cannot edit operational records or rewrite
+ * evidence.
+ */
+export const QUALITY_MEMBER: RoleDefinition = {
+  key: 'quality_member',
+  name: 'Quality Member',
+  permissions: [
+    ...p('home', 'view', 'cohort'),
+    ...p('my_work', 'view edit', 'own'),
+    ...p('students', 'view', 'cohort'),
+    ...p('groups', 'view', 'cohort'),
+    ...p('communications', 'view', 'cohort'),
+    ...p('sessions', 'view', 'cohort'),
+    ...p('freelancing', 'view', 'cohort'),
+    ...p('services', 'view', 'cohort'),
+    ...p('evidence', 'view', 'cohort'),
+    ...p('quality', 'view create edit audit approve reject', 'own'),
+    ...p('graduation', 'view', 'cohort'),
+    ...p('risks', 'view', 'cohort'),
+    ...p('escalations', 'view create', 'cohort'),
+    ...p('team', 'view', 'cohort'),
+    ...p('performance', 'view', 'own'),
+    ...p('reports', 'view', 'cohort'),
+    ...p('notifications', 'view edit', 'own'),
+    ...p('audit', 'view_logs', 'cohort'),
+  ],
+};
+
+/**
+ * Quality Lead -- independent QA authority, owns complaints, resolves L3.
+ * Independence is enforced here: no operational role holds any write on
+ * `quality`, and the Lead holds no write on operational modules.
+ */
 export const QUALITY_LEAD: RoleDefinition = {
   key: 'quality_lead',
   name: 'Quality Lead',
   permissions: [
-    ...p('dashboard', 'view', 'cohort'),
+    ...p('home', 'view', 'cohort'),
     ...p('my_work', 'view edit', 'own'),
-    // Broad read for auditability; NO write on operational modules. The absence
-    // of create/edit here is the whole point (docs/02 §3.2).
     ...p('students', 'view', 'cohort'),
+    ...p('groups', 'view', 'cohort'),
     ...p('communications', 'view', 'cohort'),
-    ...p('coaching', 'view', 'cohort'),
+    ...p('sessions', 'view', 'cohort'),
     ...p('freelancing', 'view', 'cohort'),
-    ...p('gigs', 'view', 'cohort'),
-    ...p('graduation', 'view', 'cohort'),
+    ...p('services', 'view', 'cohort'),
+    ...p('evidence', 'view export', 'cohort'),
+    ...p('quality', 'view create edit audit approve reject configure export override_lock', 'cohort'),
+    ...p('graduation', 'view export', 'cohort'),
     ...p('risks', 'view', 'cohort'),
-    ...p('escalations', 'view create', 'cohort'),
-    ...p('quality', 'view create edit audit configure export', 'cohort'),
-    ...p('tasks', 'view create', 'own'),
-    ...p('teams', 'view', 'cohort'),
+    // Owns complaints, which live in escalations with independent routing.
+    ...p('escalations', 'view create edit approve', 'cohort'),
+    ...p('team', 'view', 'cohort'),
+    ...p('performance', 'view create', 'cohort'),
     ...p('reports', 'view export', 'cohort'),
     ...p('notifications', 'view edit', 'own'),
-    ...p('audit_logs', 'view_logs export', 'cohort'),
-    ...p('admin', 'view configure', 'cohort'),
+    ...p('audit', 'view_logs export', 'cohort'),
+    ...p('administration', 'view configure', 'cohort'),
   ],
 };
 
-export const QUALITY_SPECIALIST: RoleDefinition = {
-  key: 'quality_specialist',
-  name: 'Quality Specialist',
+/**
+ * Operations Systems Specialist -- data accuracy, dashboards, the consolidated
+ * report. Read across operations with controlled configuration on reporting
+ * only; no operational write, so the person who reports the numbers cannot
+ * change the records behind them.
+ */
+export const OPERATIONS_SYSTEMS: RoleDefinition = {
+  key: 'operations_systems_specialist',
+  name: 'Operations Systems Specialist',
   permissions: [
-    ...p('dashboard', 'view', 'cohort'),
+    ...p('home', 'view', 'cohort'),
     ...p('my_work', 'view edit', 'own'),
-    ...p('students', 'view', 'cohort'),
-    ...p('communications', 'view', 'cohort'),
-    ...p('coaching', 'view', 'cohort'),
-    ...p('freelancing', 'view', 'cohort'),
-    ...p('gigs', 'view', 'cohort'),
-    ...p('graduation', 'view', 'cohort'),
-    ...p('risks', 'view', 'cohort'),
-    ...p('escalations', 'view create', 'cohort'),
-    ...p('quality', 'view create edit audit', 'own'),
-    ...p('tasks', 'view create', 'own'),
-    ...p('teams', 'view', 'cohort'),
-    ...p('reports', 'view', 'cohort'),
-    ...p('notifications', 'view edit', 'own'),
-    ...p('audit_logs', 'view_logs', 'cohort'),
-  ],
-};
-
-export const REPORTING_USER: RoleDefinition = {
-  key: 'reporting_user',
-  name: 'Reporting/Data User',
-  permissions: [
-    ...p('dashboard', 'view', 'cohort'),
     ...p('students', 'view export', 'cohort'),
+    ...p('groups', 'view export', 'cohort'),
     ...p('communications', 'view', 'cohort'),
-    ...p('coaching', 'view', 'cohort'),
+    ...p('sessions', 'view', 'cohort'),
     ...p('freelancing', 'view', 'cohort'),
-    ...p('gigs', 'view', 'cohort'),
-    ...p('graduation', 'view', 'cohort'),
+    ...p('services', 'view', 'cohort'),
+    ...p('evidence', 'view', 'cohort'),
+    ...p('quality', 'view', 'cohort'),
+    ...p('graduation', 'view export', 'cohort'),
     ...p('risks', 'view', 'cohort'),
     ...p('escalations', 'view', 'cohort'),
-    ...p('quality', 'view', 'cohort'),
-    ...p('teams', 'view', 'cohort'),
-    ...p('reports', 'view export', 'cohort'),
+    ...p('team', 'view', 'cohort'),
+    ...p('performance', 'view', 'cohort'),
+    ...p('reports', 'view export configure', 'cohort'),
     ...p('notifications', 'view edit', 'own'),
+    ...p('audit', 'view_logs export', 'cohort'),
+    ...p('administration', 'view', 'cohort'),
   ],
 };
 
-export const CLIENT_VIEWER: RoleDefinition = {
-  key: 'client_viewer',
-  name: 'Client/Read-Only Viewer',
+/**
+ * Student -- the portal, and nothing else (§10).
+ *
+ * A student holds grants on `portal` alone. Every operational module is absent
+ * from the grant set rather than merely hidden, so a routing mistake or a
+ * crafted request cannot reach staff data. Students submit evidence; they
+ * cannot accept it, alter a locked gig value, or graduate themselves.
+ */
+export const STUDENT: RoleDefinition = {
+  key: 'student',
+  name: 'Student',
+  permissions: [...p('portal', 'view create edit', 'own')],
+};
+
+/**
+ * System Admin -- technical administration, held separately from business
+ * authority (§5). Note it holds no `approve` on graduation: graduation is
+ * computed, never granted by a person (§40).
+ */
+export const SYSTEM_ADMIN: RoleDefinition = {
+  key: 'system_admin',
+  name: 'System Admin',
   permissions: [
-    // Aggregates and approved reports only. PII masking is applied in the query
-    // layer by role (docs/10 §38), not by omitting columns in the UI.
-    ...p('dashboard', 'view', 'cohort'),
-    ...p('students', 'view', 'cohort'),
-    ...p('graduation', 'view', 'cohort'),
-    ...p('reports', 'view export', 'cohort'),
-    ...p('notifications', 'view edit', 'own'),
+    ...p('home', 'view', 'all'),
+    ...p('my_work', 'view edit', 'own'),
+    ...p('students', 'view create edit delete assign reassign export', 'all'),
+    ...p('groups', 'view create edit assign reassign export', 'all'),
+    ...p('communications', 'view', 'all'),
+    ...p('sessions', 'view create edit assign', 'all'),
+    ...p('freelancing', 'view edit', 'all'),
+    ...p('services', 'view edit', 'all'),
+    ...p('evidence', 'view', 'all'),
+    // Read-only on Quality: no user outside Quality may edit a Quality decision,
+    // and "outside Quality" includes the administrator.
+    ...p('quality', 'view', 'all'),
+    ...p('graduation', 'view override_lock', 'all'),
+    ...p('risks', 'view edit', 'all'),
+    ...p('escalations', 'view edit', 'all'),
+    ...p('team', 'view create edit assign reassign', 'all'),
+    ...p('performance', 'view', 'all'),
+    ...p('reports', 'view export configure', 'all'),
+    ...p('notifications', 'view edit configure', 'all'),
+    ...p('audit', 'view_logs export', 'all'),
+    ...p('administration', 'view configure impersonate', 'all'),
   ],
 };
 
 export const SEED_ROLES: readonly RoleDefinition[] = [
-  SYSTEM_ADMIN,
   PROJECT_MANAGER,
-  OPS_ASSOCIATE,
-  TEAM_LEADER,
-  COORDINATOR,
-  coachingManager('t1'),
-  coachingManager('t2'),
-  coach('t1'),
-  coach('t2'),
+  PROJECT_OPERATIONS,
+  TEAM_SUPERVISOR,
+  OPERATIONS_COORDINATOR,
+  COACH_OPERATIONS,
+  OUTCOME_COACH,
+  SUPPORT_COACH,
+  QUALITY_MEMBER,
   QUALITY_LEAD,
-  QUALITY_SPECIALIST,
-  REPORTING_USER,
-  CLIENT_VIEWER,
+  OPERATIONS_SYSTEMS,
+  STUDENT,
+  SYSTEM_ADMIN,
 ];
 
 export const SEED_ROLES_BY_KEY: ReadonlyMap<string, RoleDefinition> = new Map(
   SEED_ROLES.map((r) => [r.key, r]),
 );
+
+/** Roles that operate on student records -- used by portal-isolation checks. */
+export const OPERATIONAL_MODULES: readonly Module[] = [
+  'students',
+  'groups',
+  'communications',
+  'sessions',
+  'freelancing',
+  'services',
+  'evidence',
+  'risks',
+  'escalations',
+  'team',
+  'performance',
+  'audit',
+  'administration',
+];

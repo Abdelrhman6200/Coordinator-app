@@ -21,7 +21,21 @@ this log records tests, not files written.
 | 16 | Quality | **Scoring & sampling complete; module pending** | 20 tests |
 | 9–12, 15, 17–24 | | **Not started** | — |
 
-**195 tests passing** across `@coordinator/permissions`, `@coordinator/rules`
+### DEPI Round 5 alignment
+
+The confirmed requirements landed after increments 2–3 were built. See
+[`16-depi-r5-reconciliation.md`](16-depi-r5-reconciliation.md) for the delta.
+
+| Area | State |
+|---|---|
+| Role model | **Replaced** with the 12 confirmed roles including Student and Coach Operations |
+| Separation of duties | **Rewritten** for the four-stage evidence pipeline, Quality independence, complaint routing and the Unresponsive history requirement |
+| Graduation ruleset | **Confirmed and locked by test** — Route A / Route B, with the $200 counterexample |
+| Quality review | **New binary seven-check module** with R01–R12 and R12 auto-escalation |
+| Schema | **Migration 0002** adds groups, sessions, attendance, services, the evidence pipeline, immutable Quality decisions, complaints, entrepreneurship, entitlement, decision log and report snapshots |
+| Rejection semantics | **Corrected** — a rejection no longer closes anything, in the engine and in the schema |
+
+**296 tests passing** across `@coordinator/permissions`, `@coordinator/rules`
 and `@coordinator/db`.
 
 ## What exists
@@ -64,6 +78,35 @@ removal is a security defect, so "stop adding it" is not sufficient.
 report `not_eligible`, because those mean different things and only one of them
 is true. This keeps register item 1 visible rather than letting a missing
 decision masquerade as a student's shortfall.
+
+## Four defects the tests caught
+
+Two from the first build, two from the DEPI alignment. All four before anything
+reached a screen.
+
+### From the DEPI alignment
+
+3. **An uncoded rejection was accepted by the database.** The constraint read
+   `outcome = 'accepted' OR array_length(rejection_codes, 1) >= 1`. On an empty
+   array `array_length` returns NULL, and a CHECK treats NULL as **passing** —
+   so the constraint let through exactly the case it was written to catch.
+   Requirement §34 is explicit that reason analytics use the coded field, which
+   is worth nothing if an uncoded rejection can be stored. Fixed in migration
+   0003 with `cardinality()`, which returns 0 rather than NULL.
+
+   The fix is added **NOT VALID** on purpose. A Quality decision is immutable and
+   append-only, so the migration must not rewrite or delete rows stored while the
+   constraint was broken. New and updated rows are enforced; existing bad rows
+   are left for Quality to re-decide at a higher level, which is the only
+   remediation route the requirements permit. The migration carries the operator
+   query and the `VALIDATE CONSTRAINT` step to run afterwards.
+
+4. **A role withdrawn from the matrix kept its grants.** The seed reconciled
+   permissions within a role but never removed a role that had left the code
+   entirely — so the old generic roles survived the switch to the DEPI set, still
+   granting. Now a withdrawn system role is deleted, or, where it is still
+   assigned to a user, stripped of every grant and kept inert so the assignment
+   history stays explicable.
 
 ## Two engine bugs the fixture library caught
 

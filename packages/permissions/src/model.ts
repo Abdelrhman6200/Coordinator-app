@@ -6,24 +6,34 @@
  * branches on a role name.
  */
 
+/**
+ * Navigation modules, per the confirmed DEPI Round 5 tab set (requirements §4).
+ *
+ * `portal` is the student-facing surface (§10): a student holds permissions on
+ * `portal` only, never on an operational module, so no permission bug can widen
+ * a student into staff territory.
+ */
 export const MODULES = [
-  'dashboard',
+  'home',
   'my_work',
   'students',
+  'groups',
   'communications',
-  'coaching',
+  'sessions',
   'freelancing',
-  'gigs',
+  'services',
+  'evidence',
+  'quality',
   'graduation',
   'risks',
   'escalations',
-  'quality',
-  'tasks',
-  'teams',
+  'team',
+  'performance',
   'reports',
   'notifications',
-  'audit_logs',
-  'admin',
+  'audit',
+  'administration',
+  'portal',
 ] as const;
 export type Module = (typeof MODULES)[number];
 

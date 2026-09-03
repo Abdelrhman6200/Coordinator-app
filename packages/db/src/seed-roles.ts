@@ -17,6 +17,10 @@ export interface SeedResult {
   rolesUpserted: number;
   permissionsInserted: number;
   permissionsRemoved: number;
+  /** System roles withdrawn from the matrix and deleted. */
+  rolesRemoved: string[];
+  /** Withdrawn roles still assigned to a user: stripped of grants, kept for audit. */
+  rolesDisarmed: string[];
 }
 
 export async function seedRoles(c: pg.Client | pg.PoolClient): Promise<SeedResult> {
@@ -54,9 +58,39 @@ export async function seedRoles(c: pg.Client | pg.PoolClient): Promise<SeedResul
     permissionsRemoved += removed.rowCount ?? 0;
   }
 
+  // A role withdrawn from the matrix must stop granting anything. Leaving it
+  // behind is the same defect as leaving a withdrawn permission behind: the
+  // grant silently outlives its removal.
+  //
+  // Where the role is still assigned to a user, deleting it would destroy the
+  // assignment history, so it is stripped of every grant and kept instead --
+  // inert, but still explaining what a past actor held.
+  const declared = SEED_ROLES.map((r) => r.key);
+  const { rows: stale } = await c.query(
+    `SELECT r.id, r.key, EXISTS (SELECT 1 FROM user_role ur WHERE ur.role_id = r.id) AS in_use
+     FROM role r
+     WHERE r.is_system = true AND r.key <> ALL($1::text[])`,
+    [declared],
+  );
+
+  const rolesRemoved: string[] = [];
+  const rolesDisarmed: string[] = [];
+  for (const row of stale) {
+    const stripped = await c.query('DELETE FROM role_permission WHERE role_id = $1', [row.id]);
+    permissionsRemoved += stripped.rowCount ?? 0;
+    if (row.in_use) {
+      rolesDisarmed.push(row.key);
+    } else {
+      await c.query('DELETE FROM role WHERE id = $1', [row.id]);
+      rolesRemoved.push(row.key);
+    }
+  }
+
   return {
     rolesUpserted: SEED_ROLES.length,
     permissionsInserted,
     permissionsRemoved,
+    rolesRemoved,
+    rolesDisarmed,
   };
 }
