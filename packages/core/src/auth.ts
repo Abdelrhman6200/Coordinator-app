@@ -63,7 +63,7 @@ export async function login(
   pool: pg.Pool,
   email: string,
   password: string,
-  meta: { ip?: string; userAgent?: string } = {},
+  meta: { ip?: string | undefined; userAgent?: string | undefined } = {},
 ): Promise<LoginResult> {
   const { rows } = await pool.query(
     `SELECT u.id, u.status, c.password_hash, c.failed_attempts, c.locked_until
@@ -96,9 +96,18 @@ export async function login(
   const ok = await verifyPassword(password, user.password_hash);
   if (!ok) {
     const attempts = (user.failed_attempts ?? 0) + 1;
+    // Every parameter is cast explicitly. Without the casts PostgreSQL cannot
+    // deduce a consistent type for a parameter used both as an integer and in a
+    // string concatenation, and the statement fails -- which previously meant
+    // the failed-attempt counter never incremented and the lockout was inert.
     await pool.query(
-      `UPDATE user_credential SET failed_attempts = $2,
-         locked_until = CASE WHEN $2 >= $3 THEN now() + ($4 || ' minutes')::interval ELSE NULL END
+      `UPDATE user_credential
+       SET failed_attempts = $2::int,
+           locked_until = CASE
+             WHEN $2::int >= $3::int
+             THEN now() + make_interval(mins => $4::int)
+             ELSE NULL
+           END
        WHERE user_id = $1`,
       [user.id, attempts, MAX_FAILED_ATTEMPTS, LOCKOUT_MINUTES],
     );
@@ -174,7 +183,8 @@ export async function elevate(
     throw new DomainError('REAUTH_FAILED', 'Password confirmation failed.');
   }
   await pool.query(
-    `UPDATE user_session SET elevated_until = now() + ($2 || ' minutes')::interval WHERE id = $1`,
+    `UPDATE user_session SET elevated_until = now() + make_interval(mins => $2::int)
+     WHERE id = $1`,
     [sessionId, minutes],
   );
 }

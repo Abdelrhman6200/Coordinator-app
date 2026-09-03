@@ -1,0 +1,19 @@
+{
+  "name": "@coordinator/api",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node --experimental-strip-types src/server.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@coordinator/core": "workspace:*",
+    "@coordinator/db": "workspace:*",
+    "@coordinator/permissions": "workspace:*",
+    "@coordinator/rules": "workspace:*",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": { "@types/pg": "^8.11.10" }
+}

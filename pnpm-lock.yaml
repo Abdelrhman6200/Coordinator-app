@@ -18,6 +18,28 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.20.1)
 
+  apps/api:
+    dependencies:
+      '@coordinator/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@coordinator/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@coordinator/permissions':
+        specifier: workspace:*
+        version: link:../../packages/permissions
+      '@coordinator/rules':
+        specifier: workspace:*
+        version: link:../../packages/rules
+      pg:
+        specifier: ^8.13.1
+        version: 8.23.0
+    devDependencies:
+      '@types/pg':
+        specifier: ^8.11.10
+        version: 8.23.1
+
   packages/core:
     dependencies:
       '@coordinator/db':

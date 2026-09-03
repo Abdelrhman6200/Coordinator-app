@@ -38,9 +38,15 @@ function dueAfterHours(from: Date, hours: number, calendar: WorkingCalendar): Da
 export interface SubmitEvidenceInput {
   studentId: string;
   subjectType: 'gig' | 'service' | 'entrepreneurship';
-  gigId?: string;
-  serviceId?: string;
-  files: Array<{ kind: string; fileRef: string; contentHash: Buffer; fileName?: string; sizeBytes?: number }>;
+  gigId?: string | undefined;
+  serviceId?: string | undefined;
+  files: Array<{
+    kind: string;
+    fileRef: string;
+    contentHash: Buffer;
+    fileName?: string | undefined;
+    sizeBytes?: number | undefined;
+  }>;
   calendar: WorkingCalendar;
 }
 
@@ -195,7 +201,7 @@ export async function reviewStage(
     submissionId: string;
     stage: 'coach' | 'l1';
     decision: 'passed' | 'returned';
-    notes?: string;
+    notes?: string | undefined;
     calendar: WorkingCalendar;
   },
 ): Promise<void> {
@@ -311,9 +317,9 @@ export interface QualityReviewInput {
   level: 'l2' | 'l3';
   checks: Record<QualityCheck, boolean>;
   rejectionCodes: RejectionCode[];
-  comments?: string;
-  disputed?: boolean;
-  actorIsQualityLead?: boolean;
+  comments?: string | undefined;
+  disputed?: boolean | undefined;
+  actorIsQualityLead?: boolean | undefined;
   calendar: WorkingCalendar;
 }
 

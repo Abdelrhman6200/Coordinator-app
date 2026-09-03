@@ -14,9 +14,9 @@ export interface RequestContext {
   readonly actorRoleKey: string;
   readonly correlationId: string;
   readonly source: 'UI' | 'API' | 'IMPORT' | 'SYSTEM_JOB';
-  readonly ip?: string;
-  readonly userAgent?: string;
-  readonly sessionId?: string;
+  readonly ip?: string | undefined;
+  readonly userAgent?: string | undefined;
+  readonly sessionId?: string | undefined;
   /** True while a step-up re-authentication is still valid. */
   readonly elevated: boolean;
   readonly now: Date;

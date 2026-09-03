@@ -64,15 +64,15 @@ async function resolveOwner(tx: pg.PoolClient, r: OwnerResolver): Promise<string
 }
 
 export interface CreateTaskInput {
-  studentId?: string | null;
-  cohortId?: string | null;
+  studentId?: string | null | undefined;
+  cohortId?: string | null | undefined;
   taskType: string;
   ownerResolver: OwnerResolver;
   dueAt: Date;
   source: 'manual' | 'workflow' | 'risk' | 'sla' | 'qa' | 'gig' | 'graduation' | 'escalation';
-  dedupKey?: string;
-  originatingEventId?: string;
-  priority?: number;
+  dedupKey?: string | undefined;
+  originatingEventId?: string | undefined;
+  priority?: number | undefined;
 }
 
 /**

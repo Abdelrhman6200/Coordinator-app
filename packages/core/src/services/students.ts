@@ -22,7 +22,7 @@ import { evaluateStudentRisk } from './risk.ts';
 
 export async function assignCoordinator(
   scope: CommandScope,
-  input: { studentId: string; coordinatorUserId: string | null; reasonCode?: string },
+  input: { studentId: string; coordinatorUserId: string | null; reasonCode?: string | undefined },
 ): Promise<void> {
   const { tx, ctx } = scope;
   const { rows: prior } = await tx.query(
@@ -108,13 +108,13 @@ export interface RecordInteractionInput {
   channel: 'whatsapp' | 'phone' | 'email' | 'sms' | 'other';
   purpose: string;
   outcome: ContactOutcome;
-  graduationPosition?: string;
-  blockingFactor?: string;
-  agreedAction?: string;
-  actionDeadline?: Date;
-  escalationRequired?: boolean;
-  notes?: string;
-  clientDedupKey?: string;
+  graduationPosition?: string | undefined;
+  blockingFactor?: string | undefined;
+  agreedAction?: string | undefined;
+  actionDeadline?: Date | undefined;
+  escalationRequired?: boolean | undefined;
+  notes?: string | undefined;
+  clientDedupKey?: string | undefined;
   calendar: WorkingCalendar;
 }
 
@@ -352,7 +352,11 @@ export async function recordInteraction(
  */
 export async function setUnresponsive(
   scope: CommandScope,
-  input: { studentId: string; actorMaySetUnresponsive: boolean; overrideReason?: string },
+  input: {
+    studentId: string;
+    actorMaySetUnresponsive: boolean;
+    overrideReason?: string | undefined;
+  },
 ): Promise<void> {
   const { tx, ctx } = scope;
   const { rows } = await tx.query(
@@ -413,7 +417,7 @@ export async function recordWithdrawal(
     withdrawnOn: Date;
     reason: string;
     ministryReference: string;
-    sourceDocument?: string;
+    sourceDocument?: string | undefined;
   },
 ): Promise<void> {
   const { tx, ctx } = scope;

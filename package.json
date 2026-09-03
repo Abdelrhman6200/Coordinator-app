@@ -9,12 +9,13 @@
   "scripts": {
     "build": "pnpm -r build",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit -p packages/permissions && tsc --noEmit -p packages/rules && tsc --noEmit -p packages/db",
+    "typecheck": "tsc --noEmit -p packages/permissions && tsc --noEmit -p packages/rules && tsc --noEmit -p packages/db && tsc --noEmit -p packages/core && tsc --noEmit -p apps/api",
     "db:up": "docker compose up -d db && node scripts/wait-for-db.mjs",
     "db:migrate": "node --experimental-strip-types packages/db/src/migrate.ts",
     "db:reset": "docker compose down -v && pnpm db:up && pnpm db:migrate",
     "db:start": "bash scripts/pg-local.sh start",
-    "db:stop": "bash scripts/pg-local.sh stop"
+    "db:stop": "bash scripts/pg-local.sh stop",
+    "api": "node --experimental-strip-types apps/api/src/server.ts"
   },
   "devDependencies": {
     "typescript": "^5.7.2",

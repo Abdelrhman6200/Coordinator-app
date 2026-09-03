@@ -11,14 +11,14 @@
 import type pg from 'pg';
 
 export interface NotifyInput {
-  userId?: string;
-  roleKey?: string;
+  userId?: string | undefined;
+  roleKey?: string | undefined;
   triggerKey: string;
   title: string;
-  body?: string;
-  subjectType?: string;
-  subjectId?: string;
-  rateLimitKey?: string;
+  body?: string | undefined;
+  subjectType?: string | undefined;
+  subjectId?: string | undefined;
+  rateLimitKey?: string | undefined;
 }
 
 export async function notify(db: pg.Pool | pg.PoolClient, input: NotifyInput): Promise<number> {
