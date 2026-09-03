@@ -18,7 +18,7 @@ The platform exists to answer three questions at all times:
 | A | PRD, data model, event model, state machines, permission matrix | **Complete — awaiting sign-off** |
 | B | Per-screen specification | **Complete — awaiting sign-off** |
 | C | Per-workflow specification | **Complete — awaiting sign-off** |
-| D | Build (24 ordered increments) | **Blocked on Phase A sign-off** |
+| D | Build (24 ordered increments) | **In progress** — see [build log](docs/15-build-log.md) |
 | E | Testing & release | Planned (see `docs/11-testing-and-release-plan.md`) |
 
 > **Hard gate.** No application code is written until Phase A is signed off.
@@ -28,7 +28,20 @@ The platform exists to answer three questions at all times:
 
 ## Documents
 
-Start at [`docs/00-index.md`](docs/00-index.md).
+Start at [`docs/00-index.md`](docs/00-index.md). Build progress is tracked in
+[`docs/15-build-log.md`](docs/15-build-log.md).
+
+## Running it
+
+```sh
+pnpm install
+pnpm db:start          # or: docker compose up -d db
+pnpm db:migrate
+pnpm test              # 195 tests
+pnpm typecheck
+```
+
+`DATABASE_URL` defaults to `postgres://coordinator@127.0.0.1:5433/coordinator`.
 
 ## Unconfirmed requirements
 

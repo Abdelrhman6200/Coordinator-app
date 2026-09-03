@@ -18,6 +18,7 @@ Read in this order. Later documents assume the vocabulary of earlier ones.
 | 12 | [Open Decisions Register](12-open-decisions-register.md) | — |
 | 13 | [Build Order](13-build-order.md) | Phase D |
 | 14 | [Consistency Gate](14-consistency-gate.md) | Traceability proof |
+| 15 | [Build Log](15-build-log.md) | Phase D progress and decisions taken during the build |
 
 ## Conventions used throughout
 
