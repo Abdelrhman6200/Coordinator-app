@@ -73,8 +73,10 @@ export const FREELANCING_GRADUATION_RULESET: GraduationRuleset = {
           parameters: { minimum: 5, count: 3 },
           evidenceStandard: 'delivered_paid_evidenced_quality_accepted',
           explain: {
-            en: '{shortfall} more Quality-accepted gig(s) worth at least $5 each',
-            ar: '{shortfall} عمل موثق إضافي بقيمة 5 دولارات على الأقل لكل عمل',
+            en: '{shortfall} more Quality-accepted gig(s) worth at least ${minimum} each ' +
+              '({actual} of {required} so far)',
+            ar: '{shortfall} عمل موثق إضافي بقيمة {minimum} دولار على الأقل لكل عمل ' +
+              '({actual} من {required} حتى الآن)',
           },
         },
         {
@@ -99,8 +101,8 @@ export const FREELANCING_GRADUATION_RULESET: GraduationRuleset = {
           parameters: { minimum: 300, count: 1 },
           evidenceStandard: 'delivered_paid_evidenced_quality_accepted',
           explain: {
-            en: 'a single Quality-accepted gig worth at least $300',
-            ar: 'عمل واحد موثق بقيمة 300 دولار على الأقل',
+            en: 'a single Quality-accepted gig worth at least ${minimum}',
+            ar: 'عمل واحد موثق بقيمة {minimum} دولار على الأقل',
           },
         },
       ],

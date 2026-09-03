@@ -14,3 +14,4 @@ export * from './services/notifications.ts';
 export * from './handlers-registry.ts';
 export * from './services/import.ts';
 export * from './services/reports.ts';
+export * from './services/workbook.ts';

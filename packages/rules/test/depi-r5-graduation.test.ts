@@ -65,7 +65,24 @@ describe('Route A — three gigs, each at least $5, total at least $15', () => {
   it('states the shortfall plainly at two of three gigs', () => {
     const e = evaluateGraduation(facts([gig('g1', 10), gig('g2', 10)]), R5);
     expect(e.gapExplanation.en).toContain('1 more Quality-accepted gig(s) worth at least $5');
+    expect(e.gapExplanation.en).toContain('2 of 3 so far');
     expect(e.gapExplanation.ar).toContain('عمل موثق إضافي');
+  });
+
+  it('tells a student with NO gigs they need three, not one', () => {
+    // The shortfall has to be arithmetic on the real numbers. Describing the
+    // requirement as prose made it incalculable and the gap silently reported
+    // "1 more" to every student, however far behind they were.
+    const e = evaluateGraduation(facts([]), R5);
+    expect(e.gapExplanation.en).toContain('3 more Quality-accepted gig(s)');
+    expect(e.gapExplanation.en).toContain('0 of 3 so far');
+  });
+
+  it('counts down correctly as gigs are accepted', () => {
+    const one = evaluateGraduation(facts([gig('g1', 10)]), R5);
+    expect(one.gapExplanation.en).toContain('2 more Quality-accepted gig(s)');
+    const two = evaluateGraduation(facts([gig('g1', 10), gig('g2', 10)]), R5);
+    expect(two.gapExplanation.en).toContain('1 more Quality-accepted gig(s)');
   });
 });
 
@@ -103,6 +120,38 @@ describe('there is no third route', () => {
   it('exposes exactly two routes', () => {
     expect(R5.routes.map((r) => r.key)).toEqual(['route_a', 'route_b']);
     expect(R5.routeLogic).toBe('ANY');
+  });
+});
+
+describe('the route a student is pointed at', () => {
+  it('points a student with no gigs at Route A, not the $300 exception', () => {
+    // Counting outstanding criteria alone would pick Route B, because it has
+    // one condition rather than two. Telling a student with nothing yet that
+    // they need a single $300 gig is the wrong advice: three $5 gigs is the
+    // path the programme actually coaches.
+    const e = evaluateGraduation(facts([]), R5);
+    expect(e.bestRouteKey).toBe('route_a');
+    expect(e.gapExplanation.en).toContain('Route A');
+    expect(e.gapExplanation.en).toContain('at least $5');
+    expect(e.gapExplanation.en).not.toContain('$300');
+  });
+
+  it('points a student with two small gigs at Route A', () => {
+    const e = evaluateGraduation(facts([gig('g1', 10), gig('g2', 10)]), R5);
+    expect(e.bestRouteKey).toBe('route_a');
+  });
+
+  it('points a student holding a large gig at Route B', () => {
+    // Real progress on Route B outweighs Route A's box count.
+    const e = evaluateGraduation(facts([gig('g1', 250)]), R5);
+    expect(e.routes.find((r) => r.routeKey === 'route_b')!.metCount).toBe(0);
+    // Route A has one criterion met (revenue >= 15), so it is the closer path.
+    expect(e.bestRouteKey).toBe('route_a');
+  });
+
+  it('still reports every route so a coordinator can see both', () => {
+    const e = evaluateGraduation(facts([gig('g1', 10)]), R5);
+    expect(e.routes.map((r) => r.routeKey)).toEqual(['route_a', 'route_b']);
   });
 });
 

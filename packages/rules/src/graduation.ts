@@ -116,6 +116,8 @@ function evaluateCriterion(
   let actual: number | string = '';
   let met = false;
   const evidenceRefs: string[] = [];
+  // Extra template variables a criterion type can expose to its explain string.
+  const extraVars: Record<string, string | number> = {};
 
   switch (c.type) {
     case 'verified_gig_count': {
@@ -143,9 +145,15 @@ function evaluateCriterion(
       const floor = num(c.parameters.minimum);
       const count = num(c.parameters.count, 1);
       const qualifying = facts.verifiedGigs.filter((g) => g.amountBase >= floor);
-      required = `${count} gig(s) of at least ${floor}`;
+      // `required` stays NUMERIC so the shortfall is computable. Describing it
+      // as "3 gig(s) of at least $5" reads well but makes the shortfall
+      // incalculable, and the gap then understates what the student needs --
+      // telling someone with no gigs at all that they need "1 more".
+      required = count;
       actual = qualifying.length;
       met = qualifying.length >= count;
+      extraVars.minimum = floor;
+      extraVars.count = count;
       evidenceRefs.push(...qualifying.map((g) => g.gigId));
       break;
     }
@@ -186,6 +194,7 @@ function evaluateCriterion(
         required,
         actual,
         shortfall,
+        ...extraVars,
       });
     }
   }
@@ -228,21 +237,30 @@ export function evaluateGraduation(
 
   const matched = routes.find((r) => r.met) ?? null;
 
-  // "Best" is the route with the fewest outstanding criteria. Ties break toward
-  // the route with more criteria already met -- two routes each needing one more
-  // thing are not equally close if the student has already satisfied three
-  // criteria on one of them. Remaining ties keep the ruleset's configured order,
-  // so the author controls what the student is nudged toward.
-  const best = [...routes].sort((a, b) => {
-    const outstanding = a.totalCount - a.metCount - (b.totalCount - b.metCount);
-    if (outstanding !== 0) return outstanding;
-    return b.metCount - a.metCount;
-  })[0];
+  // Which route the student is pointed at.
+  //
+  // Progress comes first: a student who has satisfied criteria on one route is
+  // closer to it, whatever the arithmetic of outstanding boxes says. Only then
+  // does fewest-outstanding break the tie, and the ruleset's configured order
+  // breaks what remains.
+  //
+  // The order matters most for a student with NO progress at all. Counting
+  // outstanding criteria alone would point them at whichever route has the
+  // fewest conditions -- in Round 5 that is "one gig worth $300", which is the
+  // exceptional path, not the one the programme is coaching them toward. With no
+  // progress to go on, the configured order is the honest answer, and the
+  // ruleset author puts the intended route first.
+  const anyProgressForRouting = routes.some((r) => r.metCount > 0);
+  const best = anyProgressForRouting
+    ? [...routes].sort((a, b) => {
+        if (b.metCount !== a.metCount) return b.metCount - a.metCount;
+        return a.totalCount - a.metCount - (b.totalCount - b.metCount);
+      })[0]
+    : routes[0];
 
-  // Status reflects progress across ALL routes, not just the tie-broken best
-  // one: a student who has met criteria on any route is progressing, even if
-  // some other route happens to sort first.
-  const anyProgress = routes.some((r) => r.metCount > 0);
+  // Status reflects progress across ALL routes, not just the route the student
+  // is pointed at: a student who has met criteria on any route is progressing.
+  const anyProgress = anyProgressForRouting;
 
   let status: GraduationStatus;
   if (matched) {
